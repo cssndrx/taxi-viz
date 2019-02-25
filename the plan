@@ -1,0 +1,77 @@
+redo data format
+
+current format is:
+
+dropoff/pickups
+time down to minute, gps location
+
+
+want to convert into the format:
+time down to hour, gps location of pickups
+time down to hour, gps location of dropoffs
+
+[
+{
+time_id: '5/1/2012 0:',
+pickups: [], 
+dropoffs: []
+}
+]
+
+// would be nice to keep this as GPS coordinates (in JS we can transform and aggregate)
+
+is this reasonable or is more aggregation needed?
+5 months of data
+5 * 30 * 24
+
+unclear how long pickups / dropoffs is -- probably want aggregation
+
+---
+
+so the current code is doing this on change:
+
+var iter = x_hover_to_iter(currentMousePos.x);
+show_data_for(iter % (24*4));
+
+	var equation = make_equation(seq[iter]);
+
+var seq = data_5_1;
+var data_5_1 = [[[-1.09,3.57,0.3],[-4.9,4.76,0.3],[3.83,6.14,0.3],...
+
+should probably use the existing latlng -> xfrac, yfrac code in produce_data.py
+
+
+---
+
+let's delete stuff and refactor the file first
+
+see if we can get the mesh's showing up
+
+
+threejs wireframe examples
+http://jsfiddle.net/tfjvggfu/24/
+EdgesGeometry
+
+pretty cool but hurts your eyes
+https://codepen.io/BrokenLinc/pen/bRBLjm
+
+stopped here: get wireframe into existing code
+
+first, reading some threejs tutorials
+https://www.august.com.au/blog/animating-scenes-with-webgl-three-js/
+
+renderer
+scene
+camera
+
+// mesh: geometry + material
+var plane = new THREE.Mesh(
+	new THREE.PlaneGeometry( 5, 5, 5, 5 ),
+	new THREE.MeshBasicMaterial( { color: 0x222222, wireframe: true } )
+);
+plane.rotateX(Math.PI/2);
+scene.add( plane );
+
+
+we can get rid of the render loop!!
+

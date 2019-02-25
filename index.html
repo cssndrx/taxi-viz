@@ -4,8 +4,6 @@
 	<title>MIT Big Data Challenge</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-<!--	<link rel=stylesheet href="css/base.css"/>-->
-
 
 	<link type="text/css" rel="stylesheet" href="css/graph.css">
 	<link type="text/css" rel="stylesheet" href="css/detail.css">
@@ -159,13 +157,10 @@ body{
 <script src="js/Detector.js"></script>
 <script src="js/Stats.js"></script>
 <script src="js/TrackballControls.js"></script>
-<!--<script src="js/THREEx.KeyboardState.js"></script>-->
-<!--<script src="js/THREEx.FullScreen.js"></script>-->
 <script src="js/THREEx.WindowResize.js"></script>
 
 <script type='text/javascript' src='js/DAT.GUI.min.js'></script>
 
-<!-- http://silentmatt.com/javascript-expression-evaluator/ -->
 <script src="js/parser.min.js"></script>
 
 <script src="js/jquery-1.10.2.min.js"></script>
@@ -239,7 +234,6 @@ http://stemkoski.github.io/Three.js/
 
 // MAIN
 
-var wireTexture = new THREE.ImageUtils.loadTexture( 'images/boston.png' );
 
 var sox_games = ['5/6', '5/7', '5/8', '5/9', '5/10', '5/11', '5/12', '5/23', '5/24', '5/25', '5/26', '5/27', '5/28', '6/4', '6/5', '6/6', '6/7', '6/8', '6/8', '6/9', '6/18', '6/18', '6/19', '6/25', '6/26', '6/27', '6/28', '6/29', '6/30', '7/2', '7/3', '7/4', '7/19', '7/20', '7/21', '7/22', '7/23', '7/24', '7/25', '7/29', '7/30', '7/31', '8/1', '8/2', '8/3', '8/4', '8/16', '8/17', '8/18', '8/27', '8/28', '8/29', '8/30', '8/31', '9/1', '9/2', '9/3', '9/4', '9/13', '9/14', '9/15', '9/17', '9/18', '9/19', '9/20', '9/21', '9/22', '10/4', '10/5', '10/12', '10/13', '10/19', '10/23', '10/24', '10/30'];
 
@@ -262,7 +256,6 @@ var zFunc = Parser.parse(zFuncText).toJSFunction( ['x','y'] );
 // parameters for the equations
 var a = 0.01, b = 0.01, c = 0.01, d = 0.01;
 
-var meshFunction;
 var segments = 5, //20, 
 	xMin = -10, xMax = 10, xRange = xMax - xMin,
 	yMin = -10, yMax = 10, yRange = yMax - yMin,
@@ -490,24 +483,30 @@ function init()
 	// CUSTOM //
 	////////////
 	
-	scene.add( new THREE.AxisHelper() );
+	//scene.add( new THREE.AxisHelper() );
 
 	// wireframe for xy-plane
-	var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true, side:THREE.DoubleSide } ); 
-	var floorGeometry = new THREE.PlaneGeometry(1000,1000,10,10);
-	var floorGeometry = new THREE.PlaneGeometry(10,10,10,10);
-	var floor = new THREE.Mesh(floorGeometry, wireframeMaterial);
+	// var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true, side:THREE.DoubleSide } ); 
+	// var floorGeometry = new THREE.PlaneGeometry(1000,1000,10,10);
+
+
+
+	var bostonTexture = new THREE.TextureLoader().load( 'images/boston.png' );
+	var bostonMaterial = new THREE.MeshBasicMaterial( { map: bostonTexture } );
+
+
+	var floorGeometry = new THREE.PlaneGeometry(20,20); //10,10);
+	var floor = new THREE.Mesh(floorGeometry, bostonMaterial);
 	floor.position.z = -0.01;
 	// rotate to lie in x-y plane
 	// floor.rotation.x = Math.PI / 2;
 	scene.add(floor);
 	
-	var normMaterial = new THREE.MeshNormalMaterial;
-	var shadeMaterial = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
+	// var normMaterial = new THREE.MeshNormalMaterial;
+	// var shadeMaterial = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
 	
 	// "wireframe texture"
-//	var wireTexture = new THREE.ImageUtils.loadTexture( 'images/boston.png' );
-	wireMaterial = new THREE.MeshBasicMaterial( { map: wireTexture } );
+//	var wireTexture = new THREE.TextureLoader().load( 'images/boston.png' );
 
 	// bgcolor
 	renderer.setClearColor( 0x888888, 1 );
@@ -518,13 +517,13 @@ function init()
 
 	gui = new dat.GUI();
 	
-	parameters = 
-	{
-		resetCam:  function() { resetCamera(); },	
-		preset1:   function() { preset01(); },
-		graphFunc: function() { createGraph(); },
-		finalValue: 337
-	};
+	// parameters = 
+	// {
+	// 	resetCam:  function() { resetCamera(); },	
+	// 	preset1:   function() { preset01(); },
+	// 	graphFunc: function() { createGraph(); },
+	// 	finalValue: 337
+	// };
 
 	// GUI -- equation
 	gui_zText = gui.add( this, 'zFuncText' ).name('z = f(x,y) = ');
@@ -551,11 +550,11 @@ function init()
 	gui_d.setValue(1);
 
 	// GUI -- preset equations
-	var gui_preset = gui.addFolder('Preset equations');
-	gui_preset.add( parameters, 'preset1' ).name('Sine Circles');
+	// var gui_preset = gui.addFolder('Preset equations');
+	// gui_preset.add( parameters, 'preset1' ).name('Sine Circles');
 
-	gui.add( parameters, 'resetCam' ).name("Reset Camera");
-	gui.add( parameters, 'graphFunc' ).name("Graph Function");	
+	// gui.add( parameters, 'resetCam' ).name("Reset Camera");
+	// gui.add( parameters, 'graphFunc' ).name("Graph Function");	
 
 	preset01();
 
@@ -581,17 +580,22 @@ function createGraph()
 	xRange = xMax - xMin;
 	yRange = yMax - yMin;
 	zFunc = Parser.parse(zFuncText).toJSFunction( ['x','y'] );
-	meshFunction = function(x, y) 
+	var meshFunction = function(x, y, target) 
 	{
 		x = xRange * x + xMin;
 		y = yRange * y + yMin;
 		var z = zFunc(x,y); //= Math.cos(x) * Math.sqrt(y);
-		if ( isNaN(z) )
-			return new THREE.Vector3(0,0,0); // TODO: better fix
-		else
-			return new THREE.Vector3(x, y, z);
+		if ( isNaN(z) ){
+			//return new THREE.Vector3(0,0,0); // TODO: better fix
+		    target.set(0, 0, 0);			
+		}
+		else{
+			//return new THREE.Vector3(x, y, z);
+			target.set(x, y, z);
+		}
 	};
 	
+	// https://threejs.org/docs/#api/en/geometries/ParametricGeometry
 	// true => sensible image tile repeat...
 	graphGeometry = new THREE.ParametricGeometry( meshFunction, segments, segments, true );
 	
@@ -636,12 +640,64 @@ function createGraph()
 		// renderer.deallocateObject( graphMesh );
 	}
 
-//	wireMaterial.map.repeat.set( segments, segments );
+	// Gets a wireframe.
+	// graphMesh = new THREE.Mesh(graphGeometry, new THREE.MeshBasicMaterial( { color: 0xFFA500, wireframe: true } ));
+	// scene.add(graphMesh);
+
 	
-	graphMesh = new THREE.Mesh( graphGeometry, wireMaterial );
-	graphMesh.doubleSided = true;
+	// Gets a transparent mesh 
+	// graphMesh = new THREE.Mesh(graphGeometry, new THREE.MeshBasicMaterial( { color: 0xFFA500, transparent: true, opacity: 0.5 } ));
+	// scene.add(graphMesh);
+
+
+	// We should change transparency based on the height.
+	var alphaTexture = new THREE.TextureLoader().load( 'images/radial_gradient.png' );
+
+	// todo: generate DataTexture
+	// var alphaTexture = generateDataTexture(1000, 1000, {r: 100, g: 100, b:200});
+
+	// graphMesh = new THREE.Mesh(graphGeometry, new THREE.MeshStandardMaterial( { color: 0xFFA500, transparent: true, alphaTest: 0.5, side: THREE.DoubleSide } ));
+	graphMesh = new THREE.Mesh(graphGeometry, new THREE.MeshBasicMaterial( { color: 0xFFA500, transparent: true, alphaMap: alphaTexture, side: THREE.DoubleSide } ));
 	scene.add(graphMesh);
+
+
+	// mesh
+	// var material = new THREE.MeshPhongMaterial( {
+	//     color: 0xff0000,
+	//     polygonOffset: true,
+	//     polygonOffsetFactor: 1, // positive value pushes polygon further away
+	//     polygonOffsetUnits: 1,
+	//     opacity: 0.5,
+	// } );
+	// var mesh = new THREE.Mesh( graphGeometry, material );
+	// scene.add( mesh );
+
 }
+
+// https://stackoverflow.com/questions/32924749/create-texture-from-array-three-js
+function generateDataTexture ( width, height, color ) {
+
+	var size = width * height;
+	var data = new Uint8Array( 3 * size );
+
+	var r = Math.floor( color.r * 255 );
+	var g = Math.floor( color.g * 255 );
+	var b = Math.floor( color.b * 255 );
+
+	for ( var i = 0; i < size; i ++ ) {
+
+		data[ i * 3 ] 	   = r;
+		data[ i * 3 + 1 ] = g;
+		data[ i * 3 + 2 ] = b;
+
+	}
+
+	var texture = new THREE.DataTexture( data, width, height, THREE.RGBFormat );
+	texture.needsUpdate = true;
+
+	return texture;
+}
+
 
 function make_equation(points){
 	// take a list of lists containing [x1, y1, h1] and return an equation
