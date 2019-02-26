@@ -33,20 +33,8 @@ body{
     padding: 10px;
 }
 
-#sox-alert{
-    border-radius:5%;
-
-	background: red;
-	color: white;
-	position:absolute;
-
-	padding: 10px;
-	right: 20px;
-	bottom: 2px;
-}
-
 #floaty{
-	position: absolute;
+  position: absolute;
   top: 300px;
   left: 20px;
 
@@ -79,6 +67,7 @@ body{
 .date{
   font: bold 28px monospace;
 }
+
 .swatch {
 	display: inline-block;
 	width: 10px;
@@ -92,40 +81,9 @@ body{
 	display: inline-block;
 	margin: 0 0 0 30px;
 }
-#color-block {
-    text-align:center;
-    width:100%;
-    border-radius:0%;
-    z-index:9;
-    opacity:1;
-    background-color: white;
-    display:block;
-    overflow:hidden;
-    position:absolute;
-    top: 175px;
-    display: block;
-}
-#dow {
-    opacity:1;
-    overflow:hidden;
-    z-index: 10;
-    position:absolute;
-    top: 180px;
-    display: block;
-}
+
 .rickshaw_graph .detail {
 	background: none;
-}
-.color-swatch{
-    margin:0px;
-    /*border-radius:5%;*/
-    opacity:.45;
-    overflow:hidden;
-    display: inline-block;
-}
-.dow-unit{
-    text-align: center;
-    display: inline-block;
 }
 
 #chart-1{
@@ -140,7 +98,6 @@ body{
 <script src="js/parser.min.js"></script>
 <script src="js/aggregated.js"></script>
 <script src="js/jquery-1.10.2.min.js"></script>
-<script src="js/d3.v3.min.js"></script>
 <script src="js/rickshaw.min.js"></script>
 <script src="js/underscore-min.js"></script>
 <script src="js/Detector.js"></script>
@@ -148,9 +105,7 @@ body{
 
 <!--
 <script src="js/Stats.js"></script>
-
 <script type='text/javascript' src='js/DAT.GUI.min.js'></script> 
-
 -->
 
 <div id="ThreeJS" style="position: absolute; left:0px; top:205px"></div>
@@ -176,10 +131,7 @@ body{
 	</div>
 
 	<div id="clock">
-	  <div class="clock-item time" id="hour"></div>
-	  <div class="clock-item time">:</div>
-	  <div class="clock-item time" id="minute"></div>
-	  <div class="clock-item time" id="meridiem"></div>
+	  <div class="clock-item time" id="time"></div>
 	  <br>
 	  <div class="clock-item date" id="date"></div>
 	</div>
@@ -188,24 +140,19 @@ body{
 
 <script>
 
-var container, scene, camera, renderer, controls, stats;
-//var keyboard = new THREEx.KeyboardState();
-var clock = new THREE.Clock();
+var container, scene, camera, renderer, controls;
 
-
-var segments = 5, //20, 
+var segments = 5, // 20 is higher res, but slow 
 	xMin = -10, xMax = 10, xRange = xMax - xMin,
 	yMin = -10, yMax = 10, yRange = yMax - yMin,
 	zMin = -10, zMax = 10, zRange = zMax - zMin;
 	
-var graphGeometry;
-var gridMaterial, wireMaterial, vertexColorMaterial;
 var graphMesh;
 
 init();
 animate();
 
-function iter_to_time(iter){
+function iter_to_datetime(iter){
   var step_size = 15; // 15 min
   var steps_in_a_hour = 60/step_size;
   var steps_in_a_day = steps_in_a_hour * 24;
@@ -216,119 +163,47 @@ function iter_to_time(iter){
   var hour = Math.floor(time_offset / steps_in_a_hour);
   var minute = time_offset % steps_in_a_hour * step_size;
 
-  // JS correctly calculates dates 
-  // new Date(2012, 4, 32) -> Fri Jun 01 2012 00:00:00 GMT-0400 (Eastern Daylight Time)
-  // months are 0-indexed, days are 1-indexed
+  // Return a JS date.
+  // For some reason, month is 0 index and date is 1 indexed.
+  // new Date(2012, 4, 1, 1) --> Tue May 01 2012 01:00:00 GMT-0700 (Pacific Daylight Time)
   return new Date(2012, 4, day_offset+1, hour, minute);
 }  
-
-var current_month = 0; 
-function update_statistics(iter){
-	var iter_lo = date_to_iter_range(current_month, 1)[0];
-	var ind = iter - iter_lo;
-	$('#statistics').text('' + pickups[ind] + ' pickups - ' + dropoffs[ind] + ' dropoffs / 15 min');
-}
-
-function update_clock(date){
-  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+console.assert(iter_to_datetime(0).getTime(), new Date(2012, 4, 1).getTime());
 
 
-  var day_of_week = days[date.getDay()];
-  var hour = date.getHours();
-  var minute = date.getMinutes();
-  var day = date.getDate();
-  var month = date.getMonth();
+function update_clock(datetime){
+	var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+	var date_string = datetime.toLocaleDateString("en-US", options);
 
-  // calculate AM/PM
-  if (hour===0){
-  	hour = 12;
-  	$('#meridiem').text('AM');
-  }
-  else if (hour===12){
-  	$('#meridiem').text('PM');
-  } else{
-  	if (hour > 12){
-  		hour = hour - 12;
-	  	$('#meridiem').text('PM');
-  	}else{
-	  	$('#meridiem').text('AM');  		
-  	}
-  }
+	var time_string = datetime.toLocaleString().split(', ')[1].replace(':00 ', ' ');
 
-  $('#hour').text(zeroFill(hour,2));
-  $('#minute').text(zeroFill(minute, 2));
-
-  var date_string = day_of_week + ', ' + months[month] + ' ' + day;
   $('#date').text(date_string);
+  $('#time').text(time_string);
 }
 
 
 var seq = data_5_1;
-var x_hover = 0;
 
 function show_data_for(iter){
-//	console.log('showing data for iter ' + iter);
+	console.log('showing data for iter ' + iter);
 	var equation = make_equation(seq[iter]);
-	//gui_zText.setValue(equation); // gui_ztext is really significant... it's reading in the equation from there lol.
-	createGraph(equation); 
-
-	update_clock(iter_to_time(x_hover_to_iter(x_hover)));
-	update_statistics(iter);
+	make_topology(equation); 
 }
 
-// mouse logging 
+// Track user hover on the timeline.
 $('#chart-1').mousemove(function(event){
-    x_hover = event.pageX;
-	slider_value_changed({x: event.pageX, y: event.pageY});
-});
+	var iter = x_hover_to_iter(event.pageX);
+	show_data_for(iter % (24*4)); // this is wrong i think! eep
 
-function slider_value_changed(mousePos){
-	var iter = x_hover_to_iter(mousePos.x);
-	show_data_for(iter % (24*4));
-}
+	update_clock(iter_to_datetime(iter));
+});
 
 function x_hover_to_iter(x_hover){
 	var pixels = $(window).width();
 	var num_points = 4*24*31;
-
-	var iter_lo = date_to_iter_range(current_month, 1)[0];
-
-	return Math.round(x_hover * num_points / pixels) + iter_lo;
+	return Math.round(x_hover * num_points / pixels);
 }
 
-function zeroFill( number, width ){
-  width -= number.toString().length;
-  if ( width > 0 ){
-    return new Array( width + (/\./.test( number ) ? 2 : 1) ).join( '0' ) + number;
-  }
-  return number + ""; // always return a string
-}
-
-function date_to_iter_range(month_ind, day_ind){
-	//may = 5
-	//1st = 1
-	 month_ind -= 5;
-	 day_ind -= 1;
-
-	 days_in_month = [31, 30, 31, 31, 30, 31, 30];
-
-	 iter_lo = 0;
-	 for (var i=0; i<month_ind; i++){
-	 	iter_lo += days_in_month[i];
-	 }
-
-	 iter_lo += day_ind;
-	 var iter_hi = iter_lo + 1;
-
-	var iters_in_a_day = 4 * 24;
-	iter_lo *= iters_in_a_day;
-	iter_hi *= iters_in_a_day;
-	return [iter_lo, iter_hi]; 
-}
-
-
-// FUNCTIONS 		
 function init() {
 	// SCENE
 	scene = new THREE.Scene();
@@ -356,34 +231,20 @@ function init() {
 	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
 	container = document.getElementById( 'ThreeJS' );
 	container.appendChild( renderer.domElement );
+
 	// EVENTS
 	THREEx.WindowResize(renderer, camera);
-
-
 	controls = new THREE.TrackballControls( camera, renderer.domElement );
-	// STATS
-	// stats = new Stats();
-	// stats.domElement.style.position = 'absolute';
-	// stats.domElement.style.bottom = '0px';
-	// stats.domElement.style.zIndex = 100;
-	// container.appendChild( stats.domElement );
 
 	// LIGHT
 	var light = new THREE.PointLight(0xffffff);
 	light.position.set(0,250,0);
 	scene.add(light);
 
-	////////////
-	// CUSTOM //
-	////////////
 
-	// wireframe for xy-plane
-	// var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true, side:THREE.DoubleSide } ); 
-	// var floorGeometry = new THREE.PlaneGeometry(1000,1000,10,10);
+	// FLOOR
 	var bostonTexture = new THREE.TextureLoader().load( 'images/boston.png' );
 	var bostonMaterial = new THREE.MeshBasicMaterial( { map: bostonTexture } );
-
-
 	var floorGeometry = new THREE.PlaneGeometry(20,20); //10,10);
 	var floor = new THREE.Mesh(floorGeometry, bostonMaterial);
 	floor.position.z = -0.01;
@@ -391,18 +252,12 @@ function init() {
 	// floor.rotation.x = Math.PI / 2;
 	scene.add(floor);
 	
-	// var normMaterial = new THREE.MeshNormalMaterial;
-	// var shadeMaterial = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
-	
-	// "wireframe texture"
-//	var wireTexture = new THREE.TextureLoader().load( 'images/boston.png' );
-
 	// bgcolor
 	renderer.setClearColor( 0x888888, 1 );
 }
 
 
-function createGraph(equation) {
+function make_topology(equation) {
 	xRange = xMax - xMin;
 	yRange = yMax - yMin;
 	zFunc = Parser.parse(equation).toJSFunction( ['x','y'] );
@@ -410,56 +265,19 @@ function createGraph(equation) {
 	{
 		x = xRange * x + xMin;
 		y = yRange * y + yMin;
-		var z = zFunc(x,y); //= Math.cos(x) * Math.sqrt(y);
+		var z = zFunc(x,y);
 		if ( isNaN(z) ){
-			//return new THREE.Vector3(0,0,0); // TODO: better fix
 		    target.set(0, 0, 0);			
 		}
 		else{
-			//return new THREE.Vector3(x, y, z);
 			target.set(x, y, z);
 		}
 	};
 	
 	// https://threejs.org/docs/#api/en/geometries/ParametricGeometry
 	// true => sensible image tile repeat...
-	graphGeometry = new THREE.ParametricGeometry( meshFunction, segments, segments, true );
-	
-	///////////////////////////////////////////////
-	// calculate vertex colors based on Z values //
-	///////////////////////////////////////////////
-	graphGeometry.computeBoundingBox();
-	zMin = graphGeometry.boundingBox.min.z;
-	zMax = graphGeometry.boundingBox.max.z;
-	zRange = zMax - zMin;
-	var color, point, face, numberOfSides, vertexIndex;
-	// faces are indexed using characters
-	var faceIndices = [ 'a', 'b', 'c', 'd' ];
-	// first, assign colors to vertices as desired
-	for ( var i = 0; i < graphGeometry.vertices.length; i++ ) 
-	{
-		point = graphGeometry.vertices[ i ];
-		color = new THREE.Color( 0x0000ff );
-		color.setHSL( 0.7 * (zMax - point.z) / zRange, 1, 0.5 );
-		graphGeometry.colors[i] = color; // use this array for convenience
-	}
-	// copy the colors as necessary to the face's vertexColors array.
-	for ( var i = 0; i < graphGeometry.faces.length; i++ ) 
-	{
-		face = graphGeometry.faces[ i ];
-		numberOfSides = ( face instanceof THREE.Face3 ) ? 3 : 4;
-		for( var j = 0; j < numberOfSides; j++ ) 
-		{
-			vertexIndex = face[ faceIndices[ j ] ];
-			face.vertexColors[ j ] = graphGeometry.colors[ vertexIndex ];
-		}
-	}
-	///////////////////////
-	// end vertex colors //
-	///////////////////////
-	
-	// material choices: vertexColorMaterial, wireMaterial , normMaterial , shadeMaterial
-	
+	var graphGeometry = new THREE.ParametricGeometry( meshFunction, segments, segments, true );
+		
 	if (graphMesh) 
 	{
 		scene.remove( graphMesh );
@@ -501,28 +319,28 @@ function createGraph(equation) {
 }
 
 // https://stackoverflow.com/questions/32924749/create-texture-from-array-three-js
-function generateDataTexture ( width, height, color ) {
+// function generateDataTexture ( width, height, color ) {
 
-	var size = width * height;
-	var data = new Uint8Array( 3 * size );
+// 	var size = width * height;
+// 	var data = new Uint8Array( 3 * size );
 
-	var r = Math.floor( color.r * 255 );
-	var g = Math.floor( color.g * 255 );
-	var b = Math.floor( color.b * 255 );
+// 	var r = Math.floor( color.r * 255 );
+// 	var g = Math.floor( color.g * 255 );
+// 	var b = Math.floor( color.b * 255 );
 
-	for ( var i = 0; i < size; i ++ ) {
+// 	for ( var i = 0; i < size; i ++ ) {
 
-		data[ i * 3 ] 	   = r;
-		data[ i * 3 + 1 ] = g;
-		data[ i * 3 + 2 ] = b;
+// 		data[ i * 3 ] 	   = r;
+// 		data[ i * 3 + 1 ] = g;
+// 		data[ i * 3 + 2 ] = b;
 
-	}
+// 	}
 
-	var texture = new THREE.DataTexture( data, width, height, THREE.RGBFormat );
-	texture.needsUpdate = true;
+// 	var texture = new THREE.DataTexture( data, width, height, THREE.RGBFormat );
+// 	texture.needsUpdate = true;
 
-	return texture;
-}
+// 	return texture;
+// }
 
 
 function make_equation(points){
@@ -590,7 +408,6 @@ function render() {
 
 
 function make_graph(pickups, dropoffs){
-	var color_scale = d3.interpolateHsl('darkorange', 'lightskyblue');
 
 	function convert_for_rickshaw(arr){
 		var arr_data = [];
@@ -610,12 +427,12 @@ function make_graph(pickups, dropoffs){
 		renderer: 'line',
 		series: [
 			{
-				color: color_scale(0.0),
+				color: 'darkorange', 
 				data: convert_for_rickshaw(pickups),
 				name: 'taxi pickups'
 			}, 
 			{
-				color: color_scale(1.0),
+				color: 'lightskyblue',
 				data: convert_for_rickshaw(dropoffs),
 				name: 'taxi dropoffs'
 			}, 
@@ -645,7 +462,7 @@ function make_graph(pickups, dropoffs){
 
 				var label = document.createElement('div');
 				label.className = 'label';
-				label.innerHTML = '' + d.formattedYValue + ' ' + d.name + ' / 15min';
+				label.innerHTML = '' + d.formattedYValue + ' ' + d.name + ' / 15 min';
 
 				line.appendChild(swatch);
 				line.appendChild(label);
