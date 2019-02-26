@@ -75,3 +75,6 @@ scene.add( plane );
 
 we can get rid of the render loop!!
 
+
+good article on alphamap
+https://medium.com/@soffritti.pierfrancesco/animations-with-alpha-textures-in-three-js-52a33654e137
